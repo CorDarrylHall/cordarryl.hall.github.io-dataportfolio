@@ -1,0 +1,23 @@
+project:
+  type: website
+
+website:
+  title: "Data Portfolio"
+  navbar:
+    center:
+      - href:
+    left:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+
+    right:
+      - href: Resume.qmd
+
+format:
+  html:
+    theme: sketchy
+    css: styles.css
+    toc: true
+
+editor: visual
