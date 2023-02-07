@@ -3,6 +3,8 @@ project:
 
 website:
   title: "Data Portfolio"
+  site-url: https://github.com/CorDarrylHall/cordarryl.hall.github.io
+  description: "Game of Thrones Dataset"
   navbar:
     center:
       - href:
