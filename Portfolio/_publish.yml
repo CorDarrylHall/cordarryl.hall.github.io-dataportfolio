@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: 0e8dc7ca-862c-4566-849e-c92106f71de3
+      url: 'https://starlit-swan-4c3ea7.netlify.app'

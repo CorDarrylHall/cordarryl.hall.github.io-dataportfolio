@@ -1,0 +1,128 @@
+---
+title: "GOT_Case_Study"
+author: "CorDarryl Hall"
+date: "2023-02-03"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(skimr)
+library(survival)
+library(survminer)
+
+setwd("/Users/GoT_dataset")
+
+library(tidyverse)
+character_ds <- read_csv("character_data_S01-S08.csv")
+episode_ds <- read_csv("episode_data.csv")
+
+
+character_ds_2 <- character_ds %>%
+  select(id, name, allegiance_last, allegiance_switched, dth_flag, dth_season, dth_episode, exp_season, exp_episode, exp_time_hrs)
+
+unique(character_ds_2$allegiance_last)
+
+```
+
+```{r}
+character_ds_2_1 <- character_ds_2 %>%
+  filter(allegiance_switched == 1 & (allegiance_last == 1 | allegiance_last == 2 | allegiance_last == 3 | allegiance_last == 4))
+
+no_switch <- survfit(Surv(character_ds_2_1$exp_time_hrs, character_ds_2_1$dth_flag)~character_ds_2_1$allegiance_last)
+summary(no_switch)
+
+surv_loyal <- ggsurvplot(fit=no_switch, data=character_ds_2_1,
+           legend = "bottom", 
+           legend.title = "Allegiance",
+           legend.labs = c("Stark", "Targaryen", "Night's Watch", "Lannister"),
+risk.table = F,conf.int=F) +
+    labs(
+        title="Survival of Characters Loyal to Their Allegiances",
+        x="Time in Hours"
+    )
+surv_loyal
+ggsave("surv_loyal.png")
+```
+
+No sig diff between survival curves for loyal allegiances
+
+```{r}
+survdiff(Surv(character_ds_2_1$exp_time_hrs, character_ds_2_1$dth_flag)~character_ds_2_1$allegiance_last)
+```
+
+```{r}
+character_swap <- character_ds_2 %>%
+  filter(allegiance_switched == 2 & (allegiance_last == 1 | allegiance_last == 2 | allegiance_last == 3 | allegiance_last == 4))
+
+switch <- survfit(Surv(character_swap$exp_time_hrs, character_swap$dth_flag)~character_swap$allegiance_last)
+summary(switch)
+
+surv_not_loyal <- ggsurvplot(fit=switch, data=character_swap,
+           legend = "bottom", 
+           legend.title = "Allegiance",
+           legend.labs = c("Stark", "Targaryen", "Night's Watch", "Lannister"),
+risk.table = F,conf.int=F) +
+    labs(
+        title="Survival of Characters Not Loyal to Their Allegiances",
+        x="Time in Hours"
+    )
+surv_not_loyal
+ggsave("surv_not_loyal.png")
+```
+
+traitors has sig diff from one another - if you were a traitor and chose the right side, you could do well :)
+
+```{r}
+survdiff(Surv(character_swap$exp_time_hrs, character_swap$dth_flag)~character_swap$allegiance_last)
+```
+
+```{r}
+allegiance_switch <- survfit(Surv(character_ds_2$exp_time_hrs, character_ds_2$dth_flag)~character_ds_2$allegiance_switched)
+
+allegiance_switch2 <- ggsurvplot(fit=allegiance_switch, data=character_ds_2,
+           legend = "bottom", 
+           legend.title = "Swapped Allegiance?",
+           legend.labs = c("Yes", "No"),
+risk.table = F,conf.int=T) +
+    labs(
+        title="Survival Curves for Characters who Swapped/Kept Allegiance",
+        x="Time to Death (Hours)"
+    )
+allegiance_switch2
+ggsave("allegiance_switch2.png")
+```
+
+Log Rank Test
+
+```{r}
+survdiff(Surv(character_ds_2$exp_time_hrs, character_ds_2$dth_flag)~character_ds_2$allegiance_switched)
+```
+
+```{r}
+km2=survfit(Surv(time= character_ds_2$exp_time_hrs,
+                 event= character_ds_2$dth_flag)
+            ~1)
+
+
+summary(km2) 
+
+
+got_surv <- ggsurvplot(fit=km2, data= character_ds_2,
+           legend = "bottom", 
+           legend.title = "GoT Characters",
+risk.table = F,conf.int=F, surv.median.line = "hv") +
+    labs(
+        title="Survival Curve for GoT Characters",
+        x="Time to Death (Hours)"
+    ) 
+got_surv
+ggsave("got_surv.png")
+```
